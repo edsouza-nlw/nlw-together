@@ -1,14 +1,10 @@
-import { Button } from './components/Button'
+import { Home } from "./pages/Home";
+import { NewRoom } from "./pages/NewRoom";
 
 export default function App() {
   return (
-    <div>
-      <h1>Hello World</h1>
-      <Button />
-      <Button />
-      <Button />
-    </div>
 
+      <NewRoom />
   );
 }
 
