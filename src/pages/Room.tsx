@@ -20,6 +20,17 @@ type FirebaseQuestions = Record<string, {
   isHighlighted: boolean;
 }>
 
+type Question = {
+  id: string;
+  author: {
+    name: string;
+    avatar: string;
+  }
+  content: string;
+  isAnswered: boolean;
+  isHighlighted: boolean;
+}
+
 type RoomParams = {
   id: string;
 }
@@ -28,16 +39,20 @@ export function Room() {
   const {user} = useAuth();
   const params = useParams<RoomParams>();
   const [newQuestion, setNewQuestion] = useState('')
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [title, setTitle] = useState('')
 
   const roomId = params.id;
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
 
-    roomRef.once('value', room => {
-      // console.log(room.val());
+    // roomRef.once('value', room => {
+    roomRef.on('value', room => {
       const databaseRoom = room.val();
+      // console.log(databaseRoom);
       const firebaseQuestions: FirebaseQuestions = databaseRoom.questions ?? {}
+      // console.log(firebaseQuestions);
 
       const parsedQuestions = Object.entries(firebaseQuestions).map(([key, value]) => {
         return {
@@ -49,7 +64,9 @@ export function Room() {
         }
       })
 
-      console.log(parsedQuestions)
+      // console.log("final", parsedQuestions)
+      setTitle(databaseRoom.title)
+      setQuestions(parsedQuestions)
     })
   }, [roomId]);
 
@@ -74,7 +91,7 @@ export function Room() {
       isAnswered: false,
     }
 
-    await database.ref(`rooms/${roomId}`).push(question)
+    await database.ref(`rooms/${roomId}/questions`).push(question)
 
     setNewQuestion("");
   }
@@ -90,8 +107,8 @@ export function Room() {
 
       <main>
         <div className='room-title'>
-          <h1>Sala React</h1>
-          <span>4 preguntas</span>
+          <h1>Sala {title}</h1>
+          {questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
         </div>
 
         <form onSubmit={handleSendQuestion}>
@@ -113,7 +130,7 @@ export function Room() {
             <Button type='submit' disabled={!user}>Enviar pergunta</Button>
           </div>
         </form>
-
+        {JSON.stringify(questions)}
       </main>
 
     </div>
